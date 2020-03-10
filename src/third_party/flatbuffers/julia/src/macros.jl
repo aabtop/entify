@@ -155,9 +155,26 @@ end
 
 import Parameters
 
-# TODO: this is so evil and will fall over in the slightest breeze.
+# We want to get at the struct definition, do so by searching through the
+# expression and pulling out the first (and presumably only) struct
+# subexpression.
+findfirststruct(subexpr)::Union{Expr, Nothing} = nothing
+function findfirststruct(subexpr::Expr)::Union{Expr, Nothing}
+	if subexpr.head == :struct
+		return subexpr
+	else
+		for a in subexpr.args
+			found_struct = findfirststruct(a)
+			if found_struct != nothing
+				return found_struct
+			end
+		end
+	end
+	return nothing
+end
+
 function getdef(typedef::Expr)
-	typedef.args[end-16].args[end].args[end]
+	findfirststruct(typedef).args[end]
 end
 
 function getfielddefs(typedef::Expr)

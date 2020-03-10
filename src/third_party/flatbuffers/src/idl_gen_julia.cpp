@@ -655,12 +655,18 @@ class JuliaGenerator : public BaseGenerator {
   }
 
   static Definition *GetBaseDefinition(const Type &type) {
-    switch (type.base_type) {
-      case BASE_TYPE_VECTOR: return GetBaseDefinition(type.VectorType());
-      case BASE_TYPE_STRUCT: return type.struct_def;
-      case BASE_TYPE_UNION: return type.enum_def;
-      default: return NULL;
-    }
+    if (type.base_type == BASE_TYPE_VECTOR) {
+      return GetBaseDefinition(type.VectorType());
+    } else {
+      if (type.struct_def) {
+        return type.struct_def;
+      }
+      if (type.enum_def) {
+        return type.enum_def;
+      }
+     }
+
+    return NULL;
   }
 
   static bool IsScalarEnum(const Type &type) {
