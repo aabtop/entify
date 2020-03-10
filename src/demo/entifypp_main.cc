@@ -28,7 +28,7 @@ std::shared_ptr<entifypp::Sampler> GetSampler() {
   }
 
   return std::make_shared<entifypp::Sampler>(
-      std::make_shared<entifypp::Texture>(
+      std::make_shared<entifypp::PixelDataTexture>(
           std::move(data), kWidthInPixels, kHeightInPixels, kStrideInBytes,
           entifypp::kPixelTypeRGBA));
 }
@@ -47,6 +47,7 @@ std::shared_ptr<entifypp::DrawTree> GetTriangle(
           std::make_shared<entifypp::GLSLVertexShader<
               VertexInputType, FragmentInputType, VertexUniformType>>(
                   std::vector<std::string>{"a_position", "a_texcoords"},
+                  std::vector<std::string>{"v_texcoords"},
                   std::vector<std::string>{"u_translation"},
                   "attribute vec3 a_position;"
                   "attribute vec2 a_texcoords;"
@@ -63,6 +64,7 @@ std::shared_ptr<entifypp::DrawTree> GetTriangle(
           std::make_shared<entifypp::GLSLFragmentShader<
               FragmentInputType, FragmentUniformType>>(
                   std::vector<std::string>{"u_texture"},
+                  std::vector<std::string>(),
                   "precision highp float;"
                   "varying vec2 v_texcoords;"
                   ""

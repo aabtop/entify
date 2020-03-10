@@ -21,7 +21,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include "config.h"
+//#include "config.h"
 
 #define BLAKE2_IMPL_CAT(x,y) x ## y
 #define BLAKE2_IMPL_EVAL(x,y)  BLAKE2_IMPL_CAT(x,y)

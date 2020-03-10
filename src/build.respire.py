@@ -139,6 +139,8 @@ def BuildLibWithDeps(
       libb2_module=libb2_module,
       protobuf_module=renderer_modules['protobuf_c_lib'])
 
+  entify_modules['renderer_protobuf_defs'] = renderer_modules['protobuf_c_lib']
+
   return entify_modules
 
 
@@ -183,7 +185,10 @@ def AddEntifyDemoToModules(
       sources = [
         'demo/main.cc',
       ],
-      module_dependencies=[entify_modules['entify']])
+      module_dependencies=[
+        entify_modules['entify'],
+        entify_modules['renderer_protobuf_defs']
+      ])
 
   entify_modules['entify_demo'] = entify_demo_module
 
