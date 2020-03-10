@@ -50,6 +50,9 @@ def EntryPoint(registry, out_dir, config, platform):
       stdext_modules=stdext_modules)
 
   registry.SubRespire(StartBuilds, build_modules=entify_modules)
+  registry.SubRespire(
+      StartPackageBuild, out_dir=os.path.join(out_dir, 'package'),
+      build_modules=entify_modules)
 
 
 def Build(registry, out_dir, platform, configured_toolchain,
@@ -216,3 +219,22 @@ def StartBuilds(registry, build_modules):
   for build_module in build_modules.values():
     for output_file in build_module.GetOutputFiles():
       registry.Build(output_file)
+
+def GetEntifySharedModule(registry, entify_modules):
+  return entify_modules['entify']
+
+
+def Package(registry, out_dir, module):
+  if not os.path.exists(out_dir):
+    os.makedirs(out_dir)
+
+  return module.CopyPackageFiles(out_dir, registry)
+
+def StartPackageBuild(registry, out_dir, build_modules):
+  entify_package_stamp = registry.SubRespire(
+      Package, out_dir=out_dir, module=build_modules['entify'])
+  registry.SubRespire(BuildPackage, output_file=entify_package_stamp)
+
+
+def BuildPackage(registry, output_file):
+  registry.Build(output_file)

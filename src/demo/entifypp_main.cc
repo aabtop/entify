@@ -63,8 +63,8 @@ std::shared_ptr<entifypp::DrawTree> GetTriangle(
                   "}"),
           std::make_shared<entifypp::GLSLFragmentShader<
               FragmentInputType, FragmentUniformType>>(
+                  std::vector<std::string>{"v_texcoords"},
                   std::vector<std::string>{"u_texture"},
-                  std::vector<std::string>(),
                   "precision highp float;"
                   "varying vec2 v_texcoords;"
                   ""
