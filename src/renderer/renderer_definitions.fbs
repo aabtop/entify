@@ -1,0 +1,173 @@
+// Example IDL file for our monster's schema.
+namespace entify.renderer;
+
+union RendererNodeUnion {
+  glsl_vertex_shader:GLSLVertexShader,
+  glsl_fragment_shader:GLSLFragmentShader,
+  pipeline:Pipeline,
+  vertex_buffer:VertexBuffer,
+  uniform_values:UniformValues,
+  texture:Texture,
+  sampler:Sampler,
+  draw_tree:DrawTree,
+}
+
+table RendererNode {
+  renderer_node:RendererNodeUnion;
+}
+
+union DrawTreeUnion {
+  draw_call:DrawCall,
+  draw_sequence:DrawSequence,
+  draw_set:DrawSet,
+}
+table DrawTree {
+  draw_tree:DrawTreeUnion;
+}
+
+enum PrimitiveType:byte {
+  Invalid = 0,
+  Float32V1 = 1,
+  Float32V2 = 2,
+  Float32V3 = 3,
+  Float32V4 = 4,
+  Float32M44 = 5,
+  UInt8V1 = 6,
+  UInt8V2 = 7,
+  UInt8V3 = 8,
+  UInt8V4 = 9,
+  Sampler = 10,
+}
+
+table NamedPrimitiveType {
+  type:PrimitiveType = Invalid;
+  name:string;
+}
+
+table GLSLVertexShader {
+  input_types:[NamedPrimitiveType] (required);
+  output_types:[PrimitiveType] (required);
+  uniform_types:[NamedPrimitiveType];
+
+  source:string (required);
+}
+
+table GLSLFragmentShader {
+  input_types:[PrimitiveType] (required);
+  uniform_types:[NamedPrimitiveType];
+
+  source:string (required);
+}
+
+enum BlendCoefficient:byte {
+  Invalid = 0,
+  Zero = 1,
+  One = 2,
+  SrcAlpha = 3,
+  OneMinusSrcAlpha = 4,
+}
+
+struct BlendParameters {
+  src_color:BlendCoefficient;
+  dst_color:BlendCoefficient;
+  src_alpha:BlendCoefficient;
+  dst_alpha:BlendCoefficient;
+}
+
+table Pipeline {
+  vertex_shader_id:int64;
+  fragment_shader_id:int64;
+  blend_parameters:BlendParameters (required);
+}
+
+table VertexBuffer {
+  types:[PrimitiveType] (required);
+
+  stride_in_bytes:int32;
+
+  // The number of vertices can be derived by dividing the size of the data
+  // by |stride_in_bytes|.
+  data:[ubyte] (required);
+
+  // The offset that each vertex component can be found at starting from the
+  // start of the vertex.
+  offsets:[int32] (required);
+}
+
+enum PixelType:byte {
+  Invalid = 0,
+  RGB = 1,
+  RGBA = 2,
+}
+
+union TextureUnion {
+  pixel_data:PixelData,
+  render_target:RenderTarget,
+}
+table Texture {
+  texture:TextureUnion;
+}
+
+table PixelData {
+  width_in_pixels:int32;
+  height_in_pixels:int32;
+  stride_in_bytes:int32;
+  pixel_type:PixelType;
+  data:[ubyte] (required);
+}
+
+table RenderTarget {
+  width_in_pixels:int32;
+  height_in_pixels:int32;
+  draw_tree_id:int64;
+}
+
+enum SamplerWrapType:byte {
+  Invalid = 0,
+  TypeRepeat = 1,
+  TypeClamp = 2,
+}
+
+enum SamplerFilterType:byte {
+  Invalid = 0,
+  TypeLinear = 1,
+  TypeNearest = 2,
+}
+
+table Sampler {
+  texture_id:int64;
+
+  wrap_s:SamplerWrapType;
+  wrap_t:SamplerWrapType;
+  min_filter:SamplerFilterType;
+  mag_filter:SamplerFilterType;
+}
+
+table UniformValues {
+  types:[PrimitiveType] (required);
+
+  data:[ubyte] (required);
+
+  // Contains the list of samplers specified as part of the uniforms.
+  // When iterating through the |types| sequence, if the type is a sampler then
+  // the corresponding value will be found at the next position in the
+  // |sampler_ids| sequence.
+  sampler_ids:[int64] (required);
+}
+
+table DrawCall {
+  pipeline_id:int64;
+  vertex_buffer_id:int64;
+  vertex_uniform_values_id:int64 = 0;
+  fragment_uniform_values_id:int64 = 0;
+}
+
+table DrawSequence {
+  draw_tree_ids:[int64];
+}
+
+table DrawSet {
+  draw_tree_ids:[int64];
+}
+
+root_type RendererNode;

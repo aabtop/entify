@@ -1,0 +1,47 @@
+---
+- hosts: all
+  remote_user: "{{_remote_user}}"
+  
+  tasks:
+    # Set permissions on a device file to enable user-mode support for the
+    # BH1745NUC ambient light sensor.
+    - name: "Create 'i2c' permission group for controlling access to BH1745NUC."
+      group:
+        name: i2c
+        state: present
+      become: yes
+    - name: "Set group of BH1745NUC light sensor to be 'i2c with RW access."
+      file:
+        path: /dev/i2c-1
+        group: i2c
+        mode: g+rw
+      become: yes
+    - name: "Add user to BH1745NUC light sensor permission group."
+      user:
+        name: nano
+        groups: i2c
+        append: yes
+      become: yes
+    # For entify we'd like to send each frame directly to the framebuffer
+    # without going through X Windows, so ensure that we don't automatically
+    # boot into X Windows.
+    - name: "Set default runlevel to 3 (i.e. no X Windows on startup)"
+      shell: |
+        if systemctl get-default | grep -vqL multi-user.target
+        then
+          systemctl isolate multi-user.target
+          systemctl set-default multi-user.target
+          echo changed
+        fi
+      register: set_runlevel
+      changed_when: "'changed' in set_runlevel.stdout"
+      become: yes
+    # Since we'll be using the device as a server, we'd like to keep the
+    # wireless adapter ready at all times.
+    - name: Disable wifi power management.
+      lineinfile:
+        path: /etc/NetworkManager/conf.d/default-wifi-powersave-on.conf
+        regexp: '^\s*wifi.powersave\s*='
+        line: 'wifi.powersave = 2'
+      become: yes
+

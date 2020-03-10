@@ -1,0 +1,172 @@
+syntax = "proto2";
+option optimize_for = CODE_SIZE;
+
+package entify_renderer;
+
+message RendererNode {
+  oneof DerivedType {
+    GLSLVertexShader glsl_vertex_shader = 1;
+    GLSLFragmentShader glsl_fragment_shader = 2;
+    Pipeline pipeline = 3;
+    VertexBuffer vertex_buffer = 4;
+    UniformValues uniform_values = 5;
+    Texture texture = 6;
+    Sampler sampler = 7;
+    DrawTree draw_tree = 8;
+  }
+}
+
+message DrawTree {
+  oneof DerivedType {
+    DrawCall draw_call = 1;
+    DrawSequence draw_sequence = 2;
+    DrawSet draw_set = 3;
+  }
+}
+
+enum PrimitiveType {
+  PrimitiveTypeFloat32V1 = 1;
+  PrimitiveTypeFloat32V2 = 2;
+  PrimitiveTypeFloat32V3 = 3;
+  PrimitiveTypeFloat32V4 = 4;
+  PrimitiveTypeFloat32M44 = 5;
+  PrimitiveTypeUInt8V1 = 6;
+  PrimitiveTypeUInt8V2 = 7;
+  PrimitiveTypeUInt8V3 = 8;
+  PrimitiveTypeUInt8V4 = 9;
+  PrimitiveTypeSampler = 10;
+}
+
+message PrimitiveTypeTuple {
+  repeated PrimitiveType types = 1;
+}
+
+message NamedPrimitiveType {
+  required PrimitiveType type = 1;
+  required string name = 2;
+}
+
+message NamedPrimitiveTypeTuple {
+  repeated NamedPrimitiveType named_types = 1;
+}
+
+message GLSLVertexShader {
+  required NamedPrimitiveTypeTuple input_types = 1;
+  required PrimitiveTypeTuple output_types = 2;
+  optional NamedPrimitiveTypeTuple uniform_types = 3;
+
+  required string source = 4;
+}
+
+message GLSLFragmentShader {
+  required PrimitiveTypeTuple input_types = 1;
+  optional NamedPrimitiveTypeTuple uniform_types = 2;
+
+  required string source = 3;
+}
+
+enum BlendCoefficient {
+  BlendCoefficientZero = 1;
+  BlendCoefficientOne = 2;
+  BlendCoefficientSrcAlpha = 3;
+  BlendCoefficientOneMinusSrcAlpha = 4;
+};
+
+message BlendParameters {
+  required BlendCoefficient src_color = 1;
+  required BlendCoefficient dst_color = 2;
+  required BlendCoefficient src_alpha = 3;
+  required BlendCoefficient dst_alpha = 4;
+}
+
+message Pipeline {
+  required int64 vertex_shader_id = 1;
+  required int64 fragment_shader_id = 2;
+  required BlendParameters blend_parameters = 3;
+}
+
+message VertexBuffer {
+  required PrimitiveTypeTuple types = 1;
+
+  required int32 stride_in_bytes = 2;
+
+  // The number of vertices can be derived by dividing the size of the data
+  // by |stride_in_bytes|.
+  required bytes data = 3;
+
+  // The offset that each vertex component can be found at starting from the
+  // start of the vertex.
+  repeated int32 offsets = 4;
+}
+
+enum PixelType {
+  PixelTypeRGB = 1;
+  PixelTypeRGBA = 2;
+}
+
+message Texture {
+  oneof DerivedType {
+    PixelData pixel_data = 1;
+    RenderTarget render_target = 2;
+  }
+}
+
+message PixelData {
+  required int32 width_in_pixels = 1;
+  required int32 height_in_pixels = 2;
+  required int32 stride_in_bytes = 3;
+  required PixelType pixel_type = 4;
+  required bytes data = 5;
+}
+
+message RenderTarget {
+  required int32 width_in_pixels = 1;
+  required int32 height_in_pixels = 2;
+  required int64 draw_tree_id = 3;
+}
+
+enum SamplerWrapType {
+  SamplerWrapTypeRepeat = 1;
+  SamplerWrapTypeClamp = 2;
+}
+
+enum SamplerFilterType {
+  SamplerFilterTypeLinear = 1;
+  SamplerFilterTypeNearest = 2;
+}
+
+message Sampler {
+  required int64 texture_id = 1;
+
+  required SamplerWrapType wrap_s = 2;
+  required SamplerWrapType wrap_t = 3;
+  required SamplerFilterType min_filter = 4;
+  required SamplerFilterType mag_filter = 5;
+}
+
+message UniformValues {
+  required PrimitiveTypeTuple types = 1;
+
+  required bytes data = 2;
+
+  // Contains the list of samplers specified as part of the uniforms.
+  // When iterating through the |types| sequence, if the type is a sampler then
+  // the corresponding value will be found at the next position in the
+  // |sampler_ids| sequence.
+  repeated int64 sampler_ids = 3;
+}
+
+message DrawCall {
+  required int64 pipeline_id = 1;
+  required int64 vertex_buffer_id = 2;
+  optional int64 vertex_uniform_values_id = 3;
+  optional int64 fragment_uniform_values_id = 4;
+}
+
+message DrawSequence {
+  repeated int64 draw_tree_ids = 1;
+}
+
+message DrawSet {
+  repeated int64 draw_tree_ids = 1;
+}

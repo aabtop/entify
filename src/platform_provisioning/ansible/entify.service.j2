@@ -1,0 +1,14 @@
+[Unit]
+Description=Entify
+Requires=network.target
+After=syslog.target network.target
+[Service]
+ExecStart={{exec_start_command}}
+User={{_remote_user}}
+
+# Julia doesn't seem to be great at handling SIGTERM right now, so just
+# send SIGKILL to end the process.
+KillSignal=SIGKILL
+
+[Install]
+WantedBy=multi-user.target

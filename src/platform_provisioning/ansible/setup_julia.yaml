@@ -1,0 +1,59 @@
+# Instructions for installing and setting up Julia so that Entify can be run
+# with it.  This script takes care to ensure that all Julia packages required
+# by Entify are installed.
+
+- set_fact:
+    julia_base_name: julia-1.2.0
+- set_fact:
+    julia_file_name: "{{julia_base_name}}-linux-aarch64.tar.gz"
+    julia_install_path: "{{packages_dir}}/{{julia_base_name}}"
+- set_fact:
+    julia_download_path: "{{ download_dir }}/{{ julia_file_name }}"
+    julia_command: "{{julia_install_path}}/bin/julia"
+
+- name: Ensuring directory exists {{ download_dir }}
+  file: 
+    path: "{{download_dir}}"
+    state: directory
+- name: Download Julia
+  get_url:
+    url: https://julialang-s3.julialang.org/bin/linux/aarch64/1.2/{{ julia_file_name }}
+    dest: "{{ julia_download_path }}"
+- name: Ensuring directory exists {{ packages_dir }}
+  file:
+    path: "{{ packages_dir }}"
+    state: directory
+- name: Unpacking Julia
+  unarchive:
+    src: "{{ julia_download_path }}"
+    dest: "{{ packages_dir }}"
+    remote_src: yes
+
+# Install all Julia packages required by Entify.
+- name: Install Julia packages
+  shell:
+    "{{julia_command}}
+        -e 'using Pkg;
+            if !(\"{{item}}\" in keys(Pkg.installed()))
+              Pkg.add(\"{{item}}\");
+              println(\"changed\")
+            end'"
+  register: results
+  changed_when: "'changed' in results.stdout"
+  loop:
+    - "ArgParse"
+    - "Images"
+    - "StaticArrays"
+    - "Parameters"
+    - "Literate"
+    - "ColorTypes"
+    - "FixedPointNumbers"
+    - "MacroTools"
+    - "Memoize"
+    - "Rotations"
+    - "Distributions"
+    - "HTTP"
+    - "MbedTLS"
+    - "ZipFile"
+    - "ImageMagick"
+    - "Makie"

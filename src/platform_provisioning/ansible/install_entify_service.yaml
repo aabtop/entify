@@ -1,0 +1,40 @@
+---
+# This playbook has instructions for installing Entify on a device and
+# then configuring it as a service that will be started up every time
+# the device is booted.
+
+- hosts: all
+  remote_user: "{{_remote_user}}"
+  vars:
+    - download_dir: "{{ansible_env.HOME}}/Downloads"
+    - packages_dir: "{{ansible_env.HOME}}/packages"
+    - entify_install_dir: "{{ansible_env.HOME}}/entify"
+    - local_home: "{{ lookup('env', 'HOME') }}"
+    - build_dir: >-
+        {{playbook_dir}}/../../../../../../ansible_builds/{{entify_platform}}
+
+  tasks:
+    - fail: msg="The Ansible variable entify_password must be defined."
+      when: entify_password is not defined
+
+    - import_tasks: install_entify.yaml        
+
+    # The following tasks will setup Entify to launch on startup through
+    # systemd.
+    - name: "Create Entify systemd service, entify.service."
+      template:
+        src: entify.service.j2
+        dest: "/lib/systemd/system/entify.service"
+        mode: 644
+      vars:
+        exec_start_command: >-
+          {{julia_command}} {{entify_install_dir}}/run_render_server.jl
+          -p "{{entify_password}}"
+          -a 0.0.0.0
+      become: yes
+    - name: "Enable entify.service to launch Entify on startup."
+      service:
+        name: entify
+        state: started
+        enabled: yes
+      become: yes

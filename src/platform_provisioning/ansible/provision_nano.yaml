@@ -1,0 +1,16 @@
+---
+# This is the entry point for provisioning NVIDIA Nano's to run Entify.
+
+- hosts: all
+  gather_facts: False
+  tasks:
+    - fail:
+        msg: "You must call Ansible with '-e \"entify_password=PASSWORD\"'"
+      when: entify_password is not defined
+
+- import_playbook: linux_entify_setup.yaml _remote_user='nano'
+- import_playbook: >-
+    install_entify_service.yaml
+    _remote_user='nano'
+    entify_platform='jetson'
+    entify_password='{{entify_password}}'

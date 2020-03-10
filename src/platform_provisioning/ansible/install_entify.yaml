@@ -1,0 +1,27 @@
+# This file contains instructions for building and installing Entify
+# and all of its dependencies onto a remote.  It is expected that these
+# tasks can be used for creating Docker images as well.
+
+- set_fact:
+    download_dir: "{{ansible_env.HOME}}/Downloads"
+    packages_dir: "{{ansible_env.HOME}}/packages"
+    entify_install_dir: "{{ansible_env.HOME}}/entify"
+    local_build_dir: >-
+        {{playbook_dir}}/../../../../../../ansible_builds/{{entify_platform}}
+
+# Make sure that Julia, a dependency of Entify, is installed on the target
+# device.
+- import_tasks: setup_julia.yaml
+
+# Commands to build and deploy entify on the device.
+- name: "Build Entify (locally)"
+  local_action: >-
+    command python {{playbook_dir}}/../../../../../build.py
+        -p {{entify_platform}} -c release
+        -o {{local_build_dir}}
+  register: build_out
+  changed_when: not build_out.stdout is regex("^\s*Time elapsed")
+- name: "Deploy Entify package to remote."
+  copy:
+    src: "{{local_build_dir}}/release/package_entify/"
+    dest: "{{entify_install_dir}}"
