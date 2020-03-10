@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/rjkat/flatbuffers-julia.git
+	branch = master
+	commit = 14849748149c78569f2860773187aec7bf98b7e2
+	parent = 9df0f27768dfa4aace5b383dd973f7c2cfbb29cb
+	cmdver = 0.3.1
