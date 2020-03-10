@@ -37,10 +37,17 @@ def EntryPoint(registry, out_dir, config, platform):
   host_configured_toolchain = cc.ToolchainWithConfiguration(
       host_toolchain, host_configuration)
 
+  stdext_modules = registry.SubRespireExternal(
+      'stdext/src/build.respire.py', 'Build',
+      out_dir=os.path.join(out_dir, 'stdext'),
+      configured_toolchain=configured_toolchain,
+      platform=platform)
+
   entify_modules = registry.SubRespire(
       Build, out_dir=os.path.join(out_dir, 'entify'), platform=platform,
       configured_toolchain=configured_toolchain,
-      host_configured_toolchain=host_configured_toolchain)
+      host_configured_toolchain=host_configured_toolchain,
+      stdext_modules=stdext_modules)
 
   registry.SubRespire(StartBuilds, build_modules=entify_modules)
 
