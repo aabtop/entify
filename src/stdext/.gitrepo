@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:aabtop/stdext.git
+	branch = master
+	commit = 2bc86d637ebd63048cb8e91b654d2fd2e6096062
+	parent = 4541f7f501b769e3ec733403e560f42574af0fcf
+	method = merge
+	cmdver = 0.4.1
