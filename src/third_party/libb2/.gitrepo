@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/BLAKE2/libb2.git
+	branch = master
+	commit = f4eedd3cde347127dfc9b85cb4ea7fecec75df44
+	parent = d7221f9391a15725839e4295e7f75068fa8a75a0
+	method = merge
+	cmdver = 0.4.1
